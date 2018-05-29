@@ -1,1 +1,1 @@
-# GraphQL Practice Project - Authetication
+# GraphQL Practice Project - Authentication
