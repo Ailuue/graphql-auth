@@ -1,43 +1,45 @@
 import React, { Component } from 'react';
+import { graphql } from 'react-apollo';
+
+import mutation from '../graphql/mutations/Signup';
+import query from '../graphql/queries/CurrentUser';
+import Auth from './Auth';
 
 class Signup extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { email: '', password: '' };
+    this.state = {
+      errors: ''
+    };
   }
 
-  onSubmit = e => {
-    e.preventDefault();
+  componentDidUpdate(prevProps) {
+    if (!prevProps.data.user && this.props.data.user) {
+      hashHistory.push('/dashboard');
+    }
+  }
 
-    this.props.onSubmit(this.state);
+  onSubmit = ({ email, password }) => {
+    this.props
+      .mutate({
+        variables: { email, password },
+        refetchQueries: [{ query }]
+      })
+      .catch(res => {
+        const errors = res.graphQLErrors.map(e => e.message);
+        this.setState({ errors });
+      });
   };
 
   render() {
     return (
-      <div className="row">
-        <form onSubmit={this.onSubmit} className="col s4">
-          <div className="input-field">
-            <input
-              placeholder="Email"
-              value={this.state.email}
-              onChange={e => this.setState({ email: e.target.value })}
-              type="text"
-            />
-          </div>
-          <div className="input-field">
-            <input
-              placeholder="Password"
-              value={this.state.password}
-              onChange={e => this.setState({ password: e.target.value })}
-              type="password"
-            />
-          </div>
-          <button className="btn">Submit</button>
-        </form>
+      <div>
+        <h3>Sign Up</h3>
+        <Auth errors={this.state.errors} onSubmit={this.onSubmit} />
       </div>
     );
   }
 }
 
-export default Signup;
+export default graphql(mutation)(graphql(query)(Signup));
